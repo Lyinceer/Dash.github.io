@@ -489,7 +489,7 @@
       // global varriables
       // ------------------------------------------------------------
 
-      const highscores = [];
+      let highscores = JSON.parse(localStorage.getItem("highscores")) || [];
 
       const width = 800;
       const halfWidth = width / 2;
@@ -716,8 +716,15 @@
           road.style.opacity = 0.4;
           text.innerText = "INSERT COIN";
 
-          highscores.push(lap.innerText);
-          highscores.sort();
+          const cT = new Date(timestamp() - start);
+          const lapTimeMs = cT.getTime(); // get time in milliseconds
+
+          highscores.push(lapTimeMs);
+          highscores.sort((a, b) => a - b); // sort fastest first
+
+          // Save to localStorage
+          localStorage.setItem("highscores", JSON.stringify(highscores));
+
           updateHighscore();
 
           inGame = false;
@@ -904,10 +911,13 @@
       function updateHighscore() {
         let hN = Math.min(12, highscores.length);
         for (let i = 0; i < hN; i++) {
-          highscore.children[i].innerHTML = `${(i + 1).pad(2, "&nbsp;")}. ${
-            highscores[i]
-          }`;
+          highscore.children[i].innerHTML = `${String(i + 1).padStart(2, " ")}. ${formatTime(highscores[i])}`;
         }
+      }
+
+      function formatTime(ms) {
+        const t = new Date(ms);
+        return `${t.getMinutes()}'${String(t.getSeconds()).padStart(2, "0")}"${String(t.getMilliseconds()).padStart(3, "0")}`;
       }
 
       function init() {
